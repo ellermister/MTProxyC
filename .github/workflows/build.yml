@@ -40,7 +40,7 @@ jobs:
           ls -lh objs/bin/mtproto-proxy
 
       - name: Upload binary to Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mtproto-proxy
           path: objs/bin/mtproto-proxy
