@@ -7,8 +7,6 @@ on:
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
 
-env:
-
 jobs:
   build:
 
@@ -47,6 +45,4 @@ jobs:
         with:
           files: objs/bin/mtproto-proxy
           generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
