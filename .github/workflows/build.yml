@@ -39,6 +39,13 @@ jobs:
           fi
           ls -lh objs/bin/mtproto-proxy
 
+      - name: Upload binary to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: mtproto-proxy
+          path: objs/bin/mtproto-proxy
+          retention-days: 30
+
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
