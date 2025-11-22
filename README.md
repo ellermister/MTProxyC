@@ -68,7 +68,7 @@ head -c 16 /dev/urandom | xxd -ps
 ./mtproto-proxy -u nobody -p 8888 -H 443 -S <secret> --aes-pwd proxy-secret proxy-multi.conf -M 1
 ```
 ... where:
-- `nobody` is the username. `mtproto-proxy` calls `setuid()` to drop privilegies.
+- `nobody` is the username. `mtproto-proxy` calls `setuid()` to drop privileges.
 - `443` is the port, used by clients to connect to the proxy.
 - `8888` is the local port. You can use it to get statistics from `mtproto-proxy`. Like `wget localhost:8888/stats`. You can only get this stat via loopback.
 - `<secret>` is the secret generated at step 3. Also you can set multiple secrets: `-S <secret1> -S <secret2>`.
