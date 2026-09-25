@@ -1395,7 +1395,7 @@ int tcp_rpcs_compact_parse_execute (connection_job_t C) {
       packet_len <<= 2;
     }
 
-    if (packet_len <= 0 || (packet_len & 0xc0000000) || (!(D->flags & RPC_F_PAD) && (packet_len & 3))) {
+    if (packet_len < 4 || (packet_len & 0xc0000000) || (!(D->flags & RPC_F_PAD) && (packet_len & 3))) {
       vkprintf (1, "error while parsing packet: bad packet length %d\n", packet_len);
       fail_connection (C, -1);
       return 0;

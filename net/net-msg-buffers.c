@@ -265,56 +265,6 @@ struct msg_buffers_chunk *alloc_new_msg_buffers_chunk (struct msg_buffers_chunk 
   return C;
 };
 
-void free_msg_buffers_chunk_internal (struct msg_buffers_chunk *C, struct msg_buffers_chunk *CH) {
-  assert (C->magic == MSG_CHUNK_USED_LOCKED_MAGIC);
-  unsigned magic = CH->magic;
-  assert (magic == MSG_CHUNK_HEAD_MAGIC || magic == MSG_CHUNK_HEAD_LOCKED_MAGIC);
-  assert (C->buffer_size == CH->buffer_size);
-  assert (C->tot_buffers == C->free_cnt[1]);
-  assert (CH == C->ch_head);
-  
-  C->magic = 0;
-  C->ch_head = 0;
-
-  lock_chunk_head (CH);
-  C->ch_next->ch_prev = C->ch_prev;
-  C->ch_prev->ch_next = C->ch_next;
-
-  CH->tot_buffers -= C->tot_buffers;
-  CH->free_buffers -= C->tot_buffers;
-  CH->tot_chunks--;
-  unlock_chunk_head (CH);
-  
-  assert (CH->tot_chunks >= 0);  
-
-  __sync_fetch_and_add (&allocated_buffer_chunks, -1);
-  MODULE_STAT->allocated_buffer_bytes -= MSG_BUFFERS_CHUNK_SIZE;
-
-  memset (C, 0, sizeof (struct msg_buffers_chunk));
-  free (C);
-
-  int si = buffer_size_values - 1;
-  while (si > 0 && &ChunkHeaders[si-1] != CH) {
-    si--;
-  }
-  assert (si >= 0);
-
-  if (ChunkSave[si] == C) {
-    ChunkSave[si] = NULL;
-  }
-  
-  free_mp_queue (C->free_block_queue);
-  C->free_block_queue = NULL;
-}
-
-
-void free_msg_buffers_chunk (struct msg_buffers_chunk *C) {
-  assert (C->magic == MSG_CHUNK_USED_LOCKED_MAGIC);
-  assert (C->free_cnt[1] == C->tot_buffers);
-
-  free_msg_buffers_chunk_internal (C, C->ch_head);
-}
-
 int init_msg_buffers (long max_buffer_bytes) {
   if (!max_buffer_bytes) {
     max_buffer_bytes = max_allocated_buffer_bytes ?: MSG_DEFAULT_MAX_ALLOCATED_BYTES;
@@ -518,10 +468,6 @@ int free_std_msg_buffer (struct msg_buffers_chunk *C, struct msg_buffer *X) {
   
   MODULE_STAT->total_used_buffers --;
   MODULE_STAT->total_used_buffers_size -= C->buffer_size;
-
-  //if (C->free_cnt[1] == C->tot_buffers && C->ch_head->free_buffers * 4 >= C->tot_buffers * 5) {
-  //  free_msg_buffers_chunk (C);
-  //}
 
   return 1;
 }

@@ -199,13 +199,9 @@ rpc_target_job_t rpc_target_lookup (struct process_id *pid) {
   rpc_target_job_t fake_target = ((void *)&t) - offsetof (struct async_job, j_custom);
   assert (RPC_TARGET_INFO(fake_target) == &t);
  
-  int fast = this_job_thread && this_job_thread->thread_class == JC_ENGINE;
-
-  struct tree_rpc_target *T = fast ? rpc_target_tree : get_tree_ptr_rpc_target (&rpc_target_tree);
+  struct tree_rpc_target *T = get_tree_ptr_rpc_target (&rpc_target_tree);
   rpc_target_job_t S = tree_lookup_ptr_rpc_target (T, fake_target);
-  if (!fast) {
-    tree_free_rpc_target (T);
-  }
+  tree_free_rpc_target (T);
   return S;
 }
 
@@ -287,13 +283,9 @@ connection_job_t rpc_target_choose_connection (rpc_target_job_t S, struct proces
     return 0;
   }
 
-  int fast = this_job_thread && this_job_thread->thread_class == JC_ENGINE;
-
-  struct tree_connection *T = fast ? RPC_TARGET_INFO (S)->conn_tree : get_tree_ptr_connection (&RPC_TARGET_INFO (S)->conn_tree);
+  struct tree_connection *T = get_tree_ptr_connection (&RPC_TARGET_INFO (S)->conn_tree);
   if (!T) {
-    if (!fast) {
-      tree_free_connection (T);
-    }
+    tree_free_connection (T);
     return NULL;
   }
   
@@ -305,9 +297,7 @@ connection_job_t rpc_target_choose_connection (rpc_target_job_t S, struct proces
   if (C) {
     job_incref (C);
   }
-  if (!fast) {
-    tree_free_connection (T);
-  }
+  tree_free_connection (T);
 
   return C;
 }
@@ -323,13 +313,9 @@ int rpc_target_choose_random_connections (rpc_target_job_t S, struct process_id 
   E.pos = 0;
   E.limit = limit;
 
-  int fast = this_job_thread && this_job_thread->thread_class == JC_ENGINE;
-
-  struct tree_connection *T = fast ? RPC_TARGET_INFO (S)->conn_tree : get_tree_ptr_connection (&RPC_TARGET_INFO (S)->conn_tree);
+  struct tree_connection *T = get_tree_ptr_connection (&RPC_TARGET_INFO (S)->conn_tree);
   if (!T) { 
-    if (!fast) {
-      tree_free_connection (T);
-    }
+    tree_free_connection (T);
     return 0;
   }
   
@@ -339,10 +325,7 @@ int rpc_target_choose_random_connections (rpc_target_job_t S, struct process_id 
   for (i = 0; i < E.pos; i++) {
     job_incref (buf[i]);
   }
-
-  if (!fast) {
-    tree_free_connection (T);
-  }
+  tree_free_connection (T);
 
   return E.pos;
 }
